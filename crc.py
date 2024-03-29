@@ -1,3 +1,4 @@
+from typing import List
 import unittest
 
 
@@ -43,14 +44,14 @@ def crc(data: bytes, width: int, polynomial: int, initial_value: int = 0, input_
     return crc_register ^ final_xor_value
 
 
-def create_crc_table(width: int, polynomial: int) -> list[int]:
+def create_crc_table(width: int, polynomial: int) -> List[int]:
     crc_table = []
     for i in range(256):
         crc_table.append(crc_remainder(i, 8, width, polynomial))
     return crc_table
 
 
-def table_based_crc(data: bytes, width: int, crc_table: list[int], initial_value: int = 0, input_reflected: bool = False, result_reflected: bool = False, final_xor_value: int = 0) -> int:
+def table_based_crc(data: bytes, width: int, crc_table: List[int], initial_value: int = 0, input_reflected: bool = False, result_reflected: bool = False, final_xor_value: int = 0) -> int:
     crc_register = initial_value
     result_mask = (1 << width) - 1
     msb_lshift = width - 8
