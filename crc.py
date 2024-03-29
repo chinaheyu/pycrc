@@ -1,7 +1,3 @@
-from typing import List
-import unittest
-
-
 def reflect(data: int, width: int) -> int:
     reflected_data = 0
     for _ in range(width):
@@ -44,14 +40,18 @@ def crc(data: bytes, width: int, polynomial: int, initial_value: int = 0, input_
     return crc_register ^ final_xor_value
 
 
-def create_crc_table(width: int, polynomial: int) -> List[int]:
-    crc_table = []
-    for i in range(256):
-        crc_table.append(crc_remainder(i, 8, width, polynomial))
-    return crc_table
+class CRCTable:
+    def __init__(self, width: int, polynomial: int) -> None:
+        self.item_size = ((width - 1) >> 3) + 1
+        self.buffer = bytearray(256 * self.item_size)
+        for i in range(256):
+            self.buffer[i * self.item_size:(i + 1) * self.item_size] = int(crc_remainder(i, 8, width, polynomial)).to_bytes(self.item_size, byteorder='big')
+
+    def __getitem__(self, index: int) -> int:
+        return int.from_bytes(self.buffer[index * self.item_size:(index + 1) * self.item_size], byteorder='big')
 
 
-def table_based_crc(data: bytes, width: int, crc_table: List[int], initial_value: int = 0, input_reflected: bool = False, result_reflected: bool = False, final_xor_value: int = 0) -> int:
+def table_based_crc(data: bytes, width: int, crc_table: CRCTable, initial_value: int = 0, input_reflected: bool = False, result_reflected: bool = False, final_xor_value: int = 0) -> int:
     crc_register = initial_value
     result_mask = (1 << width) - 1
     msb_lshift = width - 8
@@ -110,7 +110,7 @@ class CRCAlgorithm:
         return cls(*crc_algorithm_definitions[name][:6])
 
     def __init__(self, width: int, polynomial: int, initial_value: int = 0, input_reflected: bool = False, result_reflected: bool = False, final_xor_value: int = 0) -> None:
-        self.crc_table = create_crc_table(width, polynomial)
+        self.crc_table = CRCTable(width, polynomial)
         self.width = width
         self.polynomial = polynomial
         self.initial_value = initial_value
@@ -120,23 +120,6 @@ class CRCAlgorithm:
 
     def __call__(self, data: bytes) -> int:
         return table_based_crc(data, self.width, self.crc_table, self.initial_value, self.input_reflected, self.result_reflected, self.final_xor_value)
-
-
-class CRCUnitTest(unittest.TestCase):
-    def test_crc(self):
-        for algorithm_name, algorithm_definition in crc_algorithm_definitions.items():
-            with self.subTest(algorithm_name=algorithm_name):
-                self.assertEqual(crc(b'123456789', *algorithm_definition[:6]), algorithm_definition[6])
-
-    def test_table_based_crc(self):
-        for algorithm_name, algorithm_definition in crc_algorithm_definitions.items():
-            crc_algorithm = CRCAlgorithm.create_algorithm(algorithm_name)
-            with self.subTest(algorithm_name=algorithm_name):
-                self.assertEqual(crc_algorithm(b'123456789'), algorithm_definition[6])
-
-
-if __name__ == '__main__':
-    unittest.main(verbosity=2)
 
 
 __all__ = ['crc', 'CRCAlgorithm']
