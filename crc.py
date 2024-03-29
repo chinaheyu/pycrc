@@ -95,10 +95,9 @@ crc_algorithm_definitions = {
 }
 
 
-available_crc_algorithms = list(crc_algorithm_definitions.keys())
-
-
 class CRCAlgorithm:
+    available_crc_algorithms = list(crc_algorithm_definitions.keys())
+
     @classmethod
     def create_algorithm(cls, name: str) -> 'CRCAlgorithm':
         return cls(*crc_algorithm_definitions[name][:6])
