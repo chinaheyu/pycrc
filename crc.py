@@ -45,10 +45,10 @@ class CRCTable:
         self.item_size = ((width - 1) >> 3) + 1
         self.buffer = bytearray(256 * self.item_size)
         for i in range(256):
-            self.buffer[i * self.item_size:(i + 1) * self.item_size] = int(crc_remainder(i, 8, width, polynomial)).to_bytes(self.item_size, byteorder='big')
+            self.buffer[i * self.item_size:(i + 1) * self.item_size] = int(crc_remainder(i, 8, width, polynomial)).to_bytes(self.item_size, 'big')
 
     def __getitem__(self, index: int) -> int:
-        return int.from_bytes(self.buffer[index * self.item_size:(index + 1) * self.item_size], byteorder='big')
+        return int.from_bytes(self.buffer[index * self.item_size:(index + 1) * self.item_size], 'big')
 
 
 def table_based_crc(data: bytes, width: int, crc_table: CRCTable, initial_value: int = 0, input_reflected: bool = False, result_reflected: bool = False, final_xor_value: int = 0) -> int:
