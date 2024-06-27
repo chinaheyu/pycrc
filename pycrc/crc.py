@@ -1,4 +1,4 @@
-def reflect(data: int, width: int) -> int:
+def reflect(data, width):
     reflected_data = 0
     for _ in range(width):
         reflected_data = (reflected_data << 1) | (data & 1)
@@ -6,7 +6,7 @@ def reflect(data: int, width: int) -> int:
     return reflected_data
 
 
-def crc_remainder_msb(data: int, data_width: int, width: int, polynomial: int, initial_value: int = 0) -> int:
+def crc_remainder_msb(data, data_width, width, polynomial, initial_value=0):
     crc_register = initial_value
     result_mask = (1 << width) - 1
     ms_bit = 1 << (width - 1)
@@ -29,7 +29,7 @@ def crc_remainder_msb(data: int, data_width: int, width: int, polynomial: int, i
     return crc_register
 
 
-def crc_remainder_lsb(data: int, data_width: int, polynomial: int, initial_value: int = 0) -> int:
+def crc_remainder_lsb(data, data_width, polynomial, initial_value=0):
     data = data ^ initial_value
     for _ in range(data_width):
         if data & 1:
@@ -39,7 +39,7 @@ def crc_remainder_lsb(data: int, data_width: int, polynomial: int, initial_value
     return data
 
 
-def crc_msb(data: bytes, width: int, polynomial: int, initial_value: int = 0, input_reflected: bool = False, result_reflected: bool = False, final_xor_value: int = 0) -> int:
+def crc_msb(data, width, polynomial, initial_value=0, input_reflected=False, result_reflected=False, final_xor_value=0):
     crc_register = initial_value
     for byte in data:
         if input_reflected:
@@ -50,7 +50,7 @@ def crc_msb(data: bytes, width: int, polynomial: int, initial_value: int = 0, in
     return crc_register ^ final_xor_value
 
 
-def crc_lsb(data: bytes, width: int, polynomial: int, initial_value: int = 0, input_reflected: bool = False, result_reflected: bool = False, final_xor_value: int = 0) -> int:
+def crc_lsb(data, width, polynomial, initial_value=0, input_reflected=False, result_reflected=False, final_xor_value=0):
     polynomial = reflect(polynomial, width)
     crc_register = reflect(initial_value, width)
     for byte in data:
@@ -62,7 +62,7 @@ def crc_lsb(data: bytes, width: int, polynomial: int, initial_value: int = 0, in
     return crc_register ^ final_xor_value
 
 
-def crc(data: bytes, width: int, polynomial: int, initial_value: int = 0, input_reflected: bool = False, result_reflected: bool = False, final_xor_value: int = 0) -> int:
+def crc(data, width, polynomial, initial_value=0, input_reflected=False, result_reflected=False, final_xor_value=0):
     if input_reflected:
         return crc_lsb(data, width, polynomial, initial_value, input_reflected, result_reflected, final_xor_value)
     else:
@@ -71,7 +71,7 @@ def crc(data: bytes, width: int, polynomial: int, initial_value: int = 0, input_
 
 class CRCTable:
     @classmethod
-    def create_msb_table(cls, width: int, polynomial: int) -> 'CRCTable':
+    def create_msb_table(cls, width, polynomial):
         crc_table = cls(width)
         ms_bit = 1 << (width - 1)
         result_mask = (1 << width) - 1
@@ -89,7 +89,7 @@ class CRCTable:
         return crc_table
 
     @classmethod
-    def create_lsb_table(cls, width: int, polynomial: int) -> 'CRCTable':
+    def create_lsb_table(cls, width, polynomial):
         crc_table = cls(width)
         crc_register = 1
         i = 0x80
@@ -104,18 +104,18 @@ class CRCTable:
             i >>= 1
         return crc_table
 
-    def __init__(self, width: int) -> None:
+    def __init__(self, width):
         self.item_size = ((width - 1) >> 3) + 1
         self.buffer = bytearray(256 * self.item_size)
 
-    def __getitem__(self, index: int) -> int:
+    def __getitem__(self, index):
         return int.from_bytes(self.buffer[index * self.item_size:(index + 1) * self.item_size], 'big')
 
-    def __setitem__(self, index: int, value: int) -> None:
+    def __setitem__(self, index, value):
         self.buffer[index * self.item_size:(index + 1) * self.item_size] = value.to_bytes(self.item_size, 'big')
 
 
-def table_based_crc_msb(data: bytes, width: int, crc_table_msb: CRCTable, initial_value: int = 0, input_reflected: bool = False, result_reflected: bool = False, final_xor_value: int = 0) -> int:
+def table_based_crc_msb(data, width, crc_table_msb, initial_value=0, input_reflected=False, result_reflected=False, final_xor_value=0):
     crc_register = initial_value
     result_mask = (1 << width) - 1
     msb_lshift = width - 8
@@ -132,7 +132,7 @@ def table_based_crc_msb(data: bytes, width: int, crc_table_msb: CRCTable, initia
     return crc_register ^ final_xor_value
 
 
-def table_based_crc_lsb(data: bytes, width: int, crc_table_lsb: CRCTable, initial_value: int = 0, input_reflected: bool = False, result_reflected: bool = False, final_xor_value: int = 0) -> int:
+def table_based_crc_lsb(data, width, crc_table_lsb, initial_value=0, input_reflected=False, result_reflected=False, final_xor_value=0):
     crc_register = reflect(initial_value, width)
     result_mask = (1 << width) - 1
     for byte in data:
@@ -184,10 +184,10 @@ class CRCAlgorithm:
     available_crc_algorithms = list(crc_algorithm_definitions.keys())
 
     @classmethod
-    def create_algorithm(cls, name: str) -> 'CRCAlgorithm':
+    def create_algorithm(cls, name):
         return cls(*crc_algorithm_definitions[name][:6])
 
-    def __init__(self, width: int, polynomial: int, initial_value: int = 0, input_reflected: bool = False, result_reflected: bool = False, final_xor_value: int = 0) -> None:
+    def __init__(self, width, polynomial, initial_value=0, input_reflected=False, result_reflected=False, final_xor_value=0):
         if input_reflected:
             self.crc_table = CRCTable.create_lsb_table(width, polynomial)
             self.table_based_crc = table_based_crc_lsb
@@ -201,8 +201,5 @@ class CRCAlgorithm:
         self.result_reflected = result_reflected
         self.final_xor_value = final_xor_value
 
-    def __call__(self, data: bytes) -> int:
+    def __call__(self, data):
         return self.table_based_crc(data, self.width, self.crc_table, self.initial_value, self.input_reflected, self.result_reflected, self.final_xor_value)
-
-
-__all__ = ['crc', 'CRCAlgorithm']

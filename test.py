@@ -1,5 +1,5 @@
 import unittest
-from crc import crc_msb, crc_lsb, crc, CRCTable, table_based_crc_msb, table_based_crc_lsb, crc_algorithm_definitions, CRCAlgorithm
+from pycrc.crc import crc_msb, crc_lsb, crc, CRCTable, table_based_crc_msb, table_based_crc_lsb, crc_algorithm_definitions, CRCAlgorithm
 
 
 class CRCUnitTest(unittest.TestCase):
